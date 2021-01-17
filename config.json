@@ -1,0 +1,16 @@
+{
+    "server": {
+        "hostName": "",
+        "port": 3000
+    },
+    "mongodb": {
+        "url": "mongodb+srv://trung-nguyen:Assange@123@cluster0-rplbi.azure.mongodb.net/test?retryWrites=true",
+        "dbName": "LOTUS_DB"
+    },
+    "jwttoken": {
+        "secret": "",
+        "audience": "",
+        "issuer": "",
+        "expires": ""
+    }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "combo-server",
+  "version": "1.0.0",
+  "description": "** Install some packages:",
+  "main": "server.js",
+  "dependencies": {
+    "bcrypt": "^3.0.6",
+    "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.4",
+    "dotenv": "^8.1.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "mongodb": "^3.3.3",
+    "multer": "^1.4.2",
+    "mysql": "^2.17.1",
+    "node-pre-gyp": "^0.14.0",
+    "router": "^1.3.3",
+    "uuid": "^3.3.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": "~10.15.3",
+    "npm": "~6.9.0"
+  }
+}
