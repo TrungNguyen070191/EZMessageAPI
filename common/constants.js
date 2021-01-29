@@ -1,15 +1,9 @@
 let collections = {};
 
 const collectionsName = {
-  ACCOUNT: "cb_account",
-  USER: "cb_user",
-  PRODUCT: "cb_product",
-  CATEGORY: "cb_category",
-  BLOG: "cb_blog",
-  CONTACT: "cb_contact",
-  APPLICATION: "cb_application",
-  CUSTOMER: "cb_customer",
-  SURVEY: "cb_survey"
+  USER: "ez_user",
+  MESSAGE: "ez_message",
+  PUSHER: "ez_pusher"
 };
 
 const role = {

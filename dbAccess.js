@@ -1,4 +1,6 @@
 "use strict";
+const ExpressError = require('./common/ExpressError');
+const helpers = require('./common/helpers');
 const MongoClient = require("mongodb").MongoClient;
 const pwd = encodeURIComponent(process.env.DB_PWD);
 const url =
@@ -7,14 +9,20 @@ const url =
 const dbName = process.env.DB_NAME;
 // const mongoose = require('mongoose');
 // mongoose.Promise = global.Promise;
-// mongoose.connect(url);
-const mysql = require("mysql");
-const connection = mysql.createConnection({
-  host: process.env.DB_MYSQL_HOST,
-  user: process.env.DB_MYSQL_USER,
-  password: process.env.DB_MYSQL_PASSWORD,
-  database: process.env.DB_MYSQL_NAME
+const mongoose = require('mongoose');
+mongoose.connect(url, {
+  useNewUrlParser: true,
+  useCreateIndex: true,
+  useUnifiedTopology: true,
+  useFindAndModify: false
 });
+// const mysql = require("mysql");
+// const connection = mysql.createConnection({
+//   host: process.env.DB_MYSQL_HOST,
+//   user: process.env.DB_MYSQL_USER,
+//   password: process.env.DB_MYSQL_PASSWORD,
+//   database: process.env.DB_MYSQL_NAME
+// });
 
 class DBAccess {
   async TestConnectDb() {
@@ -28,12 +36,14 @@ class DBAccess {
     let client;
 
     try {
-      client = await MongoClient.connect(url, { useNewUrlParser: true });
+      client = await MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
       let db = client.db(dbName);
       let result = await db.collection(collectionName).findOne(filter);
       return result;
     } catch (err) {
-      console.error(err);
+      console.log(err);
+      const msg = error.details.map(el => el.message).join(',');
+      throw new ExpressError(msg, 400)
     } finally {
       if (client) {
         client.close();
@@ -44,27 +54,16 @@ class DBAccess {
   async GetManyAsync(collectionName, filter, body) {
     let client;
     try {
-      client = await MongoClient.connect(url, { useNewUrlParser: true });
+      client = await MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
       let db = client.db(dbName);
-      if (body.pageSize && body.currentPage) {
-        return await db
-          .collection(collectionName)
-          .find({})
-          .filter(filter)
-          .limit(body.pageSize)
-          .skip((body.currentPage - 1) * body.pageSize)
-          .sort(body.sortColumn, body.sortType)
-          .toArray();
-      } else {
-        return await db
-          .collection(collectionName)
-          .find({})
-          .filter(filter)
-          .sort(body.sortColumn, body.sortType)
-          .toArray();
-      }
+      return await db
+        .collection(collectionName)
+        .find({})
+        .filter(filter)
+        .toArray();
     } catch (err) {
-      console.error(err);
+      console.log(err);
+      helpers.errorHandler(err);
     } finally {
       if (client) {
         client.close();
@@ -76,7 +75,7 @@ class DBAccess {
     const pipeLine = [{ isDeleted: false }];
     let client;
     try {
-      client = await MongoClient.connect(url, { useNewUrlParser: true });
+      client = await MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
       let db = client.db(dbName);
       return await db
         .collection(collectionName)
@@ -86,7 +85,8 @@ class DBAccess {
         })
         .toArray();
     } catch (err) {
-      console.error(err);
+      console.log(err);
+      helpers.errorHandler(err);
     } finally {
       if (client) {
         client.close();
@@ -98,12 +98,13 @@ class DBAccess {
     let client;
 
     try {
-      client = await MongoClient.connect(url, { useNewUrlParser: true });
+      client = await MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
       let db = client.db(dbName);
       let result = await db.collection(collectionName).insertOne(data);
       return result;
     } catch (err) {
-      console.error(err);
+      console.log(err);
+      helpers.errorHandler(err);
     } finally {
       if (client) {
         client.close();
@@ -115,12 +116,13 @@ class DBAccess {
     let client;
 
     try {
-      client = await MongoClient.connect(url, { useNewUrlParser: true });
+      client = await MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
       let db = client.db(dbName);
       let result = await db.collection(collectionName).updateOne(filter, data);
       return result;
     } catch (err) {
-      console.error(err);
+      console.log(err);
+      helpers.errorHandler(err);
     } finally {
       if (client) {
         client.close();

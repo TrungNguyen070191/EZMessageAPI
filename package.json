@@ -1,5 +1,5 @@
 {
-  "name": "combo-server",
+  "name": "ezproject",
   "version": "1.0.0",
   "description": "** Install some packages:",
   "main": "server.js",
@@ -9,8 +9,10 @@
     "cookie-parser": "^1.4.4",
     "dotenv": "^8.1.0",
     "express": "^4.17.1",
+    "joi": "^17.3.0",
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.3.3",
+    "mongoose": "^5.11.13",
     "multer": "^1.4.2",
     "mysql": "^2.17.1",
     "node-pre-gyp": "^0.14.0",

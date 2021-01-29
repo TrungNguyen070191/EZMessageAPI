@@ -8,7 +8,7 @@ var bodyParser = require("body-parser"),
   hostName = process.env.HOSTNAME || config.server.hostName,
   port = process.env.PORT || config.server.port,
   jsonwebtoken = require("jsonwebtoken");
-  indexRouter = require('./routes/root');
+indexRouter = require('./routes/root');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -39,6 +39,12 @@ app.use(function (req, res, next) {
     next();
   }
 });
+
+app.use((err, req, res, next) => {
+  if (!err.message) err.message = 'Oh no, something went wrong!';
+  if (!err.statusCode) err.statusCode = 500;
+  res.status(err.statusCode).send(JSON.stringify(`Error Code: ${err.statusCode} - ${err.message}`));
+})
 
 //listen for request on port 3000, and as a callback function have the port listened on logged
 app.listen(port, () => {

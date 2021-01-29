@@ -1,36 +1,32 @@
 "use strict";
-var jwt = require("jsonwebtoken"),
-  jsonwebtoken = require("jsonwebtoken"),
-  bcrypt = require("bcrypt"),
-  config = require("../common/config"),
-  errors = require("../common/errorMessage"),
-  Helpers = require("../common/helpers"),
-  UserRepository = require("../repositories/userRepository"),
-  userRepo = new UserRepository(),
-  User = require("../models/user.model");
+const jwt = require("jsonwebtoken");
+const jsonwebtoken = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const config = require("../common/config");
+const errors = require("../common/errorMessage");
+const helpers = require("../common/helpers");
+const UserRepository = require("../repositories/userRepository");
+const UserRepo = new UserRepository();
+  // User = require("../models/user");
 
 // USING FOR server.js
-exports.GetAllUsers = async function (req, res) {
-  let users = await userRepo.GetAllAsync();
-  if (!users) {
+exports.register = async function (req, res, next) {
+  const dup = await UserRepo.GetOneAsync(req.body.email);
+  if (dup) {
     res.status(500).json({
       status: 500,
-      message: errors.serverNotFound
+      message: errors.duplicatedIndex
     });
     return false;
   }
-  res.status(200).json({
-    status: 200,
-    message: "Fetching Users successfully!",
-    results: users
-  });
-  console.log("Running GetAllUser()");
-  return true;
-};
-
-exports.Register = async function (req, res) {
-  req.body.password = bcrypt.hashSync(req.body.password, 10);
-  let result = await userRepo.AddNewAsync(req.body);
+  req.body.password = bcrypt.hashSync(req.body.password, 12);
+  req.body.createdDate = new Date();
+  const invalid = helpers.validateUserCredentials(req);
+  if(invalid) {
+    return res.send(JSON.stringify(invalid));
+  }
+  // const newUser = new User(req.body);
+  let result = await UserRepo.AddNewAsync(req.body);
   if (!result) {
     res.status(500).json({
       status: 500,
@@ -50,41 +46,73 @@ exports.Register = async function (req, res) {
   return true;
 };
 
-exports.SignIn = async function (req, res) {
-  let user = await userRepo.SignIn(req.body.userName, req.body.password);
+exports.login = async function (req, res, next) {
+  let user = await UserRepo.GetOneAsync(req.body.email, req.body.password);
   if (!user) {
     res.status(401).json({
       status: 401,
-      message: errors.userNotFound
+      message: errors.authIncorrect
     });
     return false;
   } else {
-    if (!Helpers.comparePassword(req.body.password, user.password)) {
+    if (!helpers.comparePassword(req.body.password, user.password)) {
       res.status(401).json({
         status: 401,
-        message: errors.pwdIncorrect
+        message: errors.authIncorrect
       });
     } else {
-      var exp = new Date();
-      res.status(200).json({
-        token: jwt.sign(
-          {
-            userName: user.userName,
-            name: user.name,
-            _id: user._id,
-            exp: exp.setMinutes(exp.getMinutes() + config.jwtToken.expires)
-          },
-          config.jwtToken.secret
-        ),
-        expiresIn: exp.setMinutes(exp.getMinutes() + config.jwtToken.expires),
-        userId: user._id
-      });
+      console.log("User Logged In!");
+      const exp = new Date();
+      user.authToken = jwt.sign(
+        {
+          email: user.email,
+          _id: user._id,
+          exp: exp.setMinutes(exp.getMinutes() + config.jwtToken.expires)
+        },
+        config.jwtToken.secret
+      );
+      await UserRepo.UpdateOneAsync(user);
+      res.status(200).json
+        ({
+          authToken: user.authToken
+        });
     }
   }
 };
 
-exports.UpdateUser = async (req, res, next) => {
-  let user = await userRepo.UpdateOneAsync(req.body);
+exports.IsAuthenticated = function (req, res, next) {
+  if (
+    req.headers && req.headers.authorization && req.headers.authorization.split(" ")[0] === config.jwtToken.key
+  ) {
+    jsonwebtoken.verify(
+      req.headers.authorization.split(" ")[1],
+      config.jwtToken.secret,
+      function (err, decode) {
+        if (err || decode === undefined) {
+          req.user = undefined;
+          return res.json({ message: errors.unauthorized });
+        } else {
+          req.user = decode;
+          var current = new Date();
+          console.log(req.user.exp, req.user._id, req.params.user_id);
+          if (current.getTime() > req.user.exp) {
+            return res.json({ message: errors.unauthorized });
+          }
+          if (req.params.user_id !== req.user._id) {
+            return res.json({ message: errors.unauthorized });
+          }
+          return next();
+        }
+      }
+    );
+  } else {
+    req.user = undefined;
+    return res.json({ message: errors.unauthorized });
+  }
+};
+
+exports.updateUser = async (req, res, next) => {
+  let user = await UserRepo.UpdateOneAsync(req.userId, req.body);
   console.log(user);
   if (!user) {
     res.status(401).json({
@@ -100,113 +128,3 @@ exports.UpdateUser = async (req, res, next) => {
   }
 };
 
-exports.GetAllUsersByFilter = async function (req, res) {
-  let users = await userRepo.GetManyAsync(req.body);
-  if (!users) {
-    res.status(401).json({
-      status: 401,
-      message: errors.serverNotFound
-    });
-    return false;
-  }
-  res.status(200).json({
-    status: 200,
-    message: "Users fetched successfully!",
-    result: users
-  });
-  console.log("Running GetAllUserByFilter()");
-  return true;
-};
-
-exports.IsAuthenticated = function (req, res, next) {
-  if (
-    req.headers &&
-    req.headers.authorization &&
-    req.headers.authorization.split(" ")[0] === config.jwtToken.key
-  ) {
-    jsonwebtoken.verify(
-      req.headers.authorization.split(" ")[1],
-      config.jwtToken.secret,
-      function (err, decode) {
-        if (err || decode === undefined) {
-          req.user = undefined;
-          return res.json({ message: errors.unauthorized });
-        } else {
-          req.user = decode;
-          var current = new Date();
-          if (current.getTime() > decode.exp) {
-            return res.json({ message: errors.unauthorized });
-          }
-          return next();
-        }
-      }
-    );
-  } else {
-    req.user = undefined;
-    return res.json({ message: errors.unauthorized });
-  }
-};
-
-exports.GetUserById = async function (req, res) {
-  let user = await userRepo.GetOneAsync(req.body._id);
-  if (!user) {
-    res.status(404).json({
-      status: 404,
-      message: errors.serverNotFound
-    });
-    return false;
-  }
-  res.status(200).json({
-    status: 200,
-    message: "Fetching User successfully!",
-    results: user
-  });
-  console.log("Running GetUserById()");
-  return true;
-};
-
-exports.create = (req, res) => {
-  // Validate request
-  if (!req.body) {
-    res.status(400).send({
-      message: "Content can not be empty!"
-    });
-  }
-
-  // Create a Customer
-  const user = new User({
-    name: req.body.name,
-    role: req.body.role,
-    workPlace: req.body.workPlace,
-    city: req.body.city,
-    status: req.body.status,
-    isDeleted: req.body.isDeleted,
-    password: req.body.password
-  });
-
-  // Save user in the database
-  User.create(user, (err, data) => {
-    if (err)
-      res.status(500).send({
-        message:
-          err.message || "Some error occurred while creating the Customer."
-      });
-    else res.send(data);
-  });
-};
-
-// USING FOR api.js
-class UserController {
-  async GetAllUsers(req, res) {
-    let users = await userRepo.GetAllAsync();
-    if (users === null || users === undefined) {
-      res.end(errors.userNotFound);
-      return false;
-    }
-    res.end(JSON.stringify(users));
-    console.log("Running GetAllUser()");
-    return true;
-  }
-}
-
-// module.exports = UserController;

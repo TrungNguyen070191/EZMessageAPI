@@ -1,15 +1,12 @@
 const express = require("express");
 const router = express.Router();
 
-const routes = require("./index.js");
+const routes = require("./index");
 
-router.use("/auth", routes.authRoutes);
-router.use("/product", routes.productRoutes);
-router.use("/category", routes.categoryRoutes);
-router.use("/blog", routes.blogRoutes);
-router.use("/contact", routes.contactRoutes);
-router.use("/application", routes.applicationRoutes);
-router.use("/customer", routes.customerRoutes);
-router.use("/question", routes.questionRoutes);
+router.use("/users", routes.userRoutes);
+// router.use("/auth", routes.authRoutes)
+router.use("/messages", routes.messageRoutes);
+router.use("/pusher", routes.pusherRoutes);
+
 
 module.exports = router;

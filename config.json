@@ -4,8 +4,8 @@
         "port": 3000
     },
     "mongodb": {
-        "url": "mongodb+srv://trung-nguyen:Assange@123@cluster0-rplbi.azure.mongodb.net/test?retryWrites=true",
-        "dbName": "LOTUS_DB"
+        "url": "mongodb+srv://ezmessage1:qwerty123456@ezmessage.qaysn.mongodb.net/test?retryWrites=true",
+        "dbName": "EZMESSAGE"
     },
     "jwttoken": {
         "secret": "",
