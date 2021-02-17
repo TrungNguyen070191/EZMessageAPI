@@ -5,7 +5,8 @@ var errorMesages = {
   unauthorized: "Unauthorized user!",
   serverNotFound: "Server Not Found",
   fethchingfailed: "Fetching posts failed!",
-  noMessage: "No message saved in data"
+  noMessage: "No message saved in data",
+  invalidReceiver: "This contact does not exist"
 };
 
 module.exports = errorMesages;

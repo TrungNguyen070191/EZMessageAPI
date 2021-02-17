@@ -5,6 +5,8 @@ const ObjectID = require('mongodb').ObjectID;
 const Message = require("../models/message");
 const MessageRepository = require('../repositories/messageRepository');
 const messageRepo = new MessageRepository();
+const UserRepository = require("../repositories/userRepository");
+const UserRepo = new UserRepository();
 
 // USING FOR server.js
 exports.getAll = async function (req, res) {
@@ -37,15 +39,22 @@ exports.getMessageLatest = async function (req, res) {
 };
 
 exports.addNewmessage = async function (req, res) {
-  const { user_id } = req.params;
-  req.body.createdDate = new Date();
+  const { user_id, to_user_id } = req.params;
   req.body.from = ObjectID(user_id);
-  const invalid = helpers.validateMessage(req, res);
-  if(invalid) {
-    return res.send(JSON.stringify(invalid));
+  req.body.to = ObjectID(to_user_id);
+  const receiver = await UserRepo.GetOneAsync(req.body.to);
+  console.dir(req.body.to);
+  if (!receiver) {
+    res.end(errors.invalidReceiver);
+    return false;
   }
-  const reqMessage = new Message(req.body);
-  const newMessage = await messageRepo.AddNewAsync(reqMessage);
+  req.body.createdDate = new Date();
+  const invalidMessage = helpers.validateMessage(req, res);
+  if(invalidMessage) {
+    return res.send(JSON.stringify(invalidMessage));
+  }
+  let newMessage = new Message(req.body);
+  newMessage = await messageRepo.AddNewAsync(newMessage);
 
   if (!newMessage) {
     res.end('Create new message is not working!');

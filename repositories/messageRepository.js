@@ -21,8 +21,8 @@ class MessageRepository {
 
     // Create New Message
     async AddNewAsync(data) {
-        return await db.AddNewAsync(this.key, data);
-    }
+        return await db.AddNewAsync(data);
+      }
 }
 
 module.exports = MessageRepository;

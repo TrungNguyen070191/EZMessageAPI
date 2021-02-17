@@ -11,8 +11,8 @@ class UserRepository {
   }
 
   // User Login
-  async GetOneAsync(email) {
-    return await db.GetOneAsync(this.key, { email: email });
+  async GetOneAsync(data) {
+    return await db.GetOneAsync(this.key,{ $or: [{ email: data }, { _id: data }] });
   }
 
   // User Register
