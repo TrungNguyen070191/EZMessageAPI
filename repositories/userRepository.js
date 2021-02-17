@@ -11,13 +11,13 @@ class UserRepository {
   }
 
   // User Login
-  async GetOneAsync(email, password) {
-    return await db.GetOneAsync(this.key, { $or: [{ email: email }, { password: password }] });
+  async GetOneAsync(email) {
+    return await db.GetOneAsync(this.key, { email: email });
   }
 
   // User Register
   async AddNewAsync(data) {
-    return await db.AddNewAsync(this.key, data);
+    return await db.AddNewAsync(data);
   }
 
   // User Update

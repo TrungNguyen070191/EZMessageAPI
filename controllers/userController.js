@@ -5,9 +5,10 @@ const bcrypt = require("bcrypt");
 const config = require("../common/config");
 const errors = require("../common/errorMessage");
 const helpers = require("../common/helpers");
+const User = require("../models/user");
 const UserRepository = require("../repositories/userRepository");
 const UserRepo = new UserRepository();
-  // User = require("../models/user");
+
 
 // USING FOR server.js
 exports.register = async function (req, res, next) {
@@ -19,18 +20,19 @@ exports.register = async function (req, res, next) {
     });
     return false;
   }
-  req.body.password = bcrypt.hashSync(req.body.password, 12);
   req.body.createdDate = new Date();
   const invalid = helpers.validateUserCredentials(req);
   if(invalid) {
     return res.send(JSON.stringify(invalid));
   }
-  // const newUser = new User(req.body);
-  let result = await UserRepo.AddNewAsync(req.body);
+  req.body.password = bcrypt.hashSync(req.body.password, 12);
+  console.dir(req.body.password)
+  let newUser = new User(req.body);
+  let result = await UserRepo.AddNewAsync(newUser);
   if (!result) {
     res.status(500).json({
       status: 500,
-      message: errors.ivalidCredentials
+      message: errors.invalidCredentials
     });
     return false;
   }
@@ -47,7 +49,7 @@ exports.register = async function (req, res, next) {
 };
 
 exports.login = async function (req, res, next) {
-  let user = await UserRepo.GetOneAsync(req.body.email, req.body.password);
+  let user = await UserRepo.GetOneAsync(req.body.email);
   if (!user) {
     res.status(401).json({
       status: 401,

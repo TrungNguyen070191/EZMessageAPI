@@ -1,12 +1,10 @@
 const Joi = require('joi');
 module.exports = userSchema = Joi.object({
-        firstName: Joi.string().required().trim(),
-        lastName: Joi.string().required().trim(),
-        gender: Joi.string(),
+        firstName: Joi.string().alphanum().min(2).max(30).required().trim(),
+        lastName: Joi.string().alphanum().min(2).max(30).required().trim(),
+        gender: Joi.allow('M', 'F'),
         phone: Joi.string(),
-        email: Joi.string().email().lowercase().trim().required(),
-        password: Joi.any().required(),
+        email: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } }).trim().lowercase().required(),
+        password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).required(),
         createdDate: Joi.date().default(Date.now),
-        authToken: Joi.string(),
-        notiToken: Joi.array(),
 });

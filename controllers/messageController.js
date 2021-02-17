@@ -1,13 +1,10 @@
 'use strict';
 const errors = require("../common/errorMessage");
 const helpers = require("../common/helpers");
-
-const MessageRepository = require('../repositories/messageRepository');
 const ObjectID = require('mongodb').ObjectID;
-
+const Message = require("../models/message");
+const MessageRepository = require('../repositories/messageRepository');
 const messageRepo = new MessageRepository();
-
-// const Message = require("../models/message");
 
 // USING FOR server.js
 exports.getAll = async function (req, res) {
@@ -47,7 +44,7 @@ exports.addNewmessage = async function (req, res) {
   if(invalid) {
     return res.send(JSON.stringify(invalid));
   }
-  const reqMessage = new Message(req.body)
+  const reqMessage = new Message(req.body);
   const newMessage = await messageRepo.AddNewAsync(reqMessage);
 
   if (!newMessage) {

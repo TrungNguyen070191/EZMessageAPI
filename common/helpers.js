@@ -5,7 +5,7 @@ const messageSchema = require('../models/messageSchema');
 
 module.exports = helpers = {
     comparePassword: function (password, hash_password) {
-        return bcrypt.compareSync(password, hash_password);
+        return bcrypt.compare(password, hash_password);
     },
 
     latestDate: (arr) => {
@@ -44,8 +44,7 @@ module.exports = helpers = {
         } else {
             return false;
         }
-    }
-
+    },
 }
 
 

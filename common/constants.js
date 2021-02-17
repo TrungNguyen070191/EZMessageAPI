@@ -1,9 +1,9 @@
 let collections = {};
 
 const collectionsName = {
-  USER: "ez_user",
-  MESSAGE: "ez_message",
-  PUSHER: "ez_pusher"
+  USER: "ez_users",
+  MESSAGE: "ez_messages",
+  PUSHER: "ez_pushers"
 };
 
 const role = {

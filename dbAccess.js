@@ -7,15 +7,8 @@ const url =
   process.env.DB_PRECONNECTSTRING + pwd + process.env.DB_SUFCONNECTSTRING;
 // const url = process.env.DB_LOCALCONNECTIONSTRING;
 const dbName = process.env.DB_NAME;
-// const mongoose = require('mongoose');
-// mongoose.Promise = global.Promise;
 const mongoose = require('mongoose');
-mongoose.connect(url, {
-  useNewUrlParser: true,
-  useCreateIndex: true,
-  useUnifiedTopology: true,
-  useFindAndModify: false
-});
+
 // const mysql = require("mysql");
 // const connection = mysql.createConnection({
 //   host: process.env.DB_MYSQL_HOST,
@@ -25,13 +18,6 @@ mongoose.connect(url, {
 // });
 
 class DBAccess {
-  async TestConnectDb() {
-    connection.connect(error => {
-      if (error) throw error;
-      console.log("Successfully connected to the database.");
-    });
-  }
-
   async GetOneAsync(collectionName, filter) {
     let client;
 
@@ -94,23 +80,50 @@ class DBAccess {
     }
   }
 
-  async AddNewAsync(collectionName, data) {
+  async AddNewAsync(data) {
     let client;
 
     try {
-      client = await MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
-      let db = client.db(dbName);
-      let result = await db.collection(collectionName).insertOne(data);
-      return result;
+      mongoose.connect(url, {
+        useNewUrlParser: true,
+        useCreateIndex: true,
+        useUnifiedTopology: true,
+        useFindAndModify: false
+      });
+      client = mongoose.connection;
+      client.on("error", console.error.bind(console, "connection error:"));
+      client.once("open", () => {
+        console.log("Database connected");
+      });
+      await data.save();
+      return data;
     } catch (err) {
       console.log(err);
-      helpers.errorHandler(err);
+      helpers.catchAsync(err);
     } finally {
       if (client) {
         client.close();
       }
     }
   }
+
+  // async AddNewAsync(collectionName, data) {
+  //   let client;
+
+  //   try {
+  //     client = await MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
+  //     let db = client.db(dbName);
+  //     let result = await db.collection(collectionName).insertOne(data);
+  //     return result;
+  //   } catch (err) {
+  //     console.log(err);
+  //     helpers.errorHandler(err);
+  //   } finally {
+  //     if (client) {
+  //       client.close();
+  //     }
+  //   }
+  // }
 
   async UpdateAsync(collectionName, filter, data) {
     let client;
